@@ -1,56 +1,52 @@
 #include <iostream>
-#include<vector>
-#include<algorithm>
-
 using namespace std;
-
-void sortByRatio(vector<int>& weight, vector<int>& profit, vector<float>& ratio, int n){
-  for(int i=0; i<n; i++){
-    ratio.push_back(profit[i]/weight[i]);
-  }
-  for (size_t i = 0; i < n-1; i++) {
-    for (size_t j = 0; j < n; j++) {
-      if(ratio[j] < ratio[j+1]){
-        swap(ratio[j],ratio[j+1]);
-
-        swap(weight[j],weight[j+1]);
-
-        swap(profit[j],profit[j+1]);
+void knapsack(int n, int W, int p[], int wt[])
+{
+    int val[n + 1][W + 1];
+    for (int i = 0; i <= n; i++){
+      for (int w = 0; w <= W; w++){
+        if (i == 0 || w == 0){
+          val[i][w] = 0;
+        }
+        else if (wt[i - 1] <= w){
+          val[i][w] = max(val[i - 1][w], (val[i - 1][w - wt[i - 1]] + p[i - 1]));
+        }
+        else{
+          val[i][w] = val[i - 1][w];
+        }
       }
     }
+    int solution[n];
+    int profit = val[n][W];
+    for (int i = n; i > 0; i--){
+      int j = 0;
+      while (val[i][j] != profit){
+          j++;
+      }
+      if (val[i][j] == val[i - 1][j]){
+          solution[i - 1] = 0;
+      }
+      else{
+          solution[i - 1] = 1;
+      }
+      profit = profit - p[i - 1];
   }
+  cout << "Solution : " << endl;
+  for (int i = 0; i < n; i++){
+    cout << "W" << i + 1 << "\t";
+  }
+  cout << endl;
+  for (int i = 0; i < n; i++){
+    cout << solution[i] << " \t";
+  }
+  cout << "\n"<< "Max Profit = " << val[n][W];
 }
-void knapsack(vector<int>& weight,vector<int>& profit, int n, int maxCapacity){
-  vector<float> ratio;
-  sortByRatio(weight,profit,ratio,n);
-  cout<<"Weights taken : \n";
-  for(auto& w:weight){
-    if(maxCapacity-w > 0) {
-      cout<<w<<" ";
-      maxCapacity-=w;
-    }
-    else break;
-  }
-  cout<<"\n";
-}
-
-int main(){
-  system("cls");
-  int n,maxCapacity;
-  vector<int> weight;
-  vector<int> profit;
-  cout<<"Enter no of weights : ";
-  cin>>n;
-  cout<<"Enter max Capacity : ";
-  cin>>maxCapacity;
-  cout<<"Enter "<<n<<" weights and profits:\n";
-  for (size_t i = 0; i < n; i++) {
-    int temp;
-    cin>>temp;
-    weight.push_back(temp);
-    cin>>temp;
-    profit.push_back(temp);
-  }
-  knapsack(weight,profit,n,maxCapacity);
-  return 0;
+int main()
+{
+    int n = 4;
+    int p[] = {6, 60, 100, 120};
+    int wt[] = {5, 10, 20, 30};
+    int W = 45;
+    knapsack(n, W, p, wt);
+    return 0;
 }
