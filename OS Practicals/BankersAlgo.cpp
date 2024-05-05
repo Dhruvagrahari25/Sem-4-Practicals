@@ -1,92 +1,83 @@
-#include <stdio.h>
+#include <bits/stdc++.h>
+using namespace std;
 int main()
 {
-  int p, c, count = 0, i, j, alc[5][3], max[5][3], need[5][3], safe[5], available[3], finish[5], terminate = 0;
-  printf("Enter the number of processes and resources: ");
-  scanf("%d %d", &p, &c);
-  printf("Enter allocation of resources for all processes (%d x %d matrix):\n", p, c);
-  for (i = 0; i < p; i++)
-  {
-    for (j = 0; j < c; j++)
+    int noOfprocesses, noOfresources;
+    cout << "Enter the number of processes\n";
+    cin >> noOfprocesses;
+    cout << "Enter the number of resources\n";
+    cin >> noOfresources;
+    vector<vector<int>>allocation(noOfprocesses, vector<int>(noOfresources, -1));
+    vector<vector<int>> maxNeed(noOfprocesses, vector<int>(noOfresources, -1));
+    vector<vector<int>> remNeed(noOfprocesses, vector<int>(noOfresources, -1));
+    vector<int> available(noOfresources, -1);
+    vector<int> safeSeq;
+    unordered_set<int> st;
+    cout << "Enter the resource allocation matrix\n";
+    for (int i = 0; i < noOfprocesses; i++)
     {
-      scanf("%d", &alc[i][j]);
-    }
-  }
-  printf("Enter the maximum resources required by each process (%d x %d matrix):\n", p, c);
-  for (i = 0; i < p; i++)
-  {
-    for (j = 0; j < c; j++)
-    {
-      scanf("%d", &max[i][j]);
-    }
-  }
-  printf("Enter the available resources: ");
-  for (i = 0; i < c; i++)
-  {
-    scanf("%d", &available[i]);
-  }
-  printf("\nNeed resources matrix:\n");
-  for (i = 0; i < p; i++)
-  {
-    for (j = 0; j < c; j++)
-    {
-      need[i][j] = max[i][j] - alc[i][j];
-      printf("%d\t", need[i][j]);
-    }
-    printf("\n");
-  }
-  for (i = 0; i < p; i++)
-  {
-    finish[i] = 0;
-  }
-  while (count < p)
-  {
-    for (i = 0; i < p; i++)
-    {
-      if (finish[i] == 0)
-      {
-        for (j = 0; j < c; j++)
+        for (int j = 0; j < noOfresources; j++)
         {
-          if (need[i][j] > available[j]){
-            break;
-          }
+            cin >> allocation[i][j];
         }
-        if (j == c)
+    }
+    cout << "Enter the Maximum need matrix\n";
+    for (int i = 0; i < noOfprocesses; i++)
+    {
+        for (int j = 0; j < noOfresources; j++)
         {
-          safe[count] = i;
-          finish[i] = 1;
-          for (j = 0; j < c; j++)
-          {
-            available[j] += alc[i][j];
-          }
-          count++;
-          terminate = 0;
+            cin >> maxNeed[i][j];
         }
-        else
+    }
+    cout << "Enter the available resources\n";
+    for (int i = 0; i < noOfresources; i++)
+    {
+        cin >> available[i];
+    }
+    // Remaining need calculation
+    for (int i = 0; i < noOfprocesses; i++)
+    {
+        for (int j = 0; j < noOfresources; j++)
         {
-          terminate++;
+            remNeed[i][j] = maxNeed[i][j] - allocation[i][j];
+            cout << remNeed[i][j] << " ";
         }
-      }
+        cout << "\n";
     }
-    if (terminate == (p - 1))
+    // Safe Sequence
+    bool deadlock = false;
+    while (st.size() != noOfprocesses && !deadlock)
     {
-      printf("Safe sequence does not exist\n");
-      break;
+        deadlock = true;
+        for (int i = 0; i < noOfprocesses; i++)
+        {
+            if (st.find(i) != st.end())
+                continue;
+            int canallocate = 0;
+            for (int j = 0; j < noOfresources; j++)
+            {
+                if (available[j] >= remNeed[i][j])
+                    canallocate++;
+            }
+            if (canallocate != noOfresources)
+                continue;
+            for (int k = 0; k < noOfresources; k++)
+                available[k] +=
+                    allocation[i][k];
+            st.insert(i);
+            safeSeq.push_back(i);
+            deadlock = false;
+        }
     }
-  }
-  if (terminate != (p - 1))
-  {
-    printf("\nAvailable resources after completion:\n");
-    for (i = 0; i < c; i++)
+    if (st.size() != noOfprocesses)
     {
-      printf("%d\t", available[i]);
+        cout << "The system is in deadlock state\n";
     }
-    printf("\nSafe sequence:\n");
-    for (i = 0; i < p; i++)
+    else
     {
-      printf("p%d\t", safe[i]);
+        cout << "Safe sequence is: ";
+        for (auto it : safeSeq)
+            cout << "P" << it << " ";
     }
-    printf("\n");
-  }
-  return 0;
+    return 0;
 }
